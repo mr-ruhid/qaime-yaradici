@@ -78,4 +78,4 @@ This project is open-source and available under the MIT License.
 
 Ruhid Cavadov
 OBir Natürel
-📧 ruhid@obir.az
+📧 ruhidjavadoff@gmail.com
