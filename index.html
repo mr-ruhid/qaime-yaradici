@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mədaxil Qəbzi - OBir Natürel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* Çap üçün Xüsusi Stil (A4 Ölçüsü) */
+        @media print {
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* Boş sətirləri gizlətmək üçün klass */
+            .hidden-print {
+                display: none !important;
+            }
+            .print-container {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                border: none;
+                padding: 0;
+            }
+            input, textarea {
+                border: none !important;
+                background: transparent !important;
+                resize: none;
+                padding: 0;
+                overflow: hidden; /* Scrollbar çapda düşməsin */
+            }
+            /* Input placeholderləri çapda görsənməsin */
+            input::placeholder, textarea::placeholder {
+                color: transparent;
+            }
+            /* Səhifənin kəsilməməsi üçün */
+            .page-break-inside-avoid {
+                page-break-inside: avoid;
+            }
+        }
+
+        .a4-paper {
+            width: 210mm;
+            /* Yalnız bir səhifə üçün hündürlüyü məhdudlaşdırırıq */
+            height: 296mm; 
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 10mm; /* Kənarlardan boşluq */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .table-input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            text-align: center;
+            outline: none;
+            font-family: inherit;
+        }
+
+        /* Textarea üçün xüsusi stil */
+        textarea.table-input {
+            text-align: left;
+            resize: none;
+            overflow: hidden;
+            min-height: 1.5rem; /* Daha kompakt */
+            padding-top: 0.25rem;
+            line-height: 1.25;
+        }
+        
+        .table-input:focus {
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- İdarəetmə Paneli (Çapda düşmür) -->
+    <div class="no-print fixed top-0 left-0 w-full bg-gray-800 text-white p-4 z-50 flex justify-between items-center shadow-lg">
+        <div class="font-bold text-lg">Qaimə Hazırlayan - OBir Natürel</div>
+        <div class="flex gap-4">
+            <button onclick="resetInvoice()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-sm transition">
+                Sıfırla & Yeni ID
+            </button>
+            <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded font-bold transition flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                PDF / Çap Et
+            </button>
+        </div>
+    </div>
+
+    <!-- Boşluq (Header üçün) -->
+    <div class="h-20 no-print"></div>
+
+    <!-- Əsas Sənəd (A4) -->
+    <div class="a4-paper print-container" id="invoiceArea">
+        
+        <!-- Başlıq Hissəsi (Daha yığcam) -->
+        <div class="flex justify-between items-start mb-4 border-b-2 border-gray-800 pb-2">
+            <div class="w-1/2">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-bold text-gray-700">ID No:</span>
+                    <input type="text" id="invoiceId" class="font-mono font-bold text-xl text-red-600 w-32 bg-transparent focus:outline-none" readonly>
+                </div>
+                <div class="text-sm font-bold uppercase tracking-wide text-gray-800 mb-1">Mədaxil Qəbzinin Kötüyü</div>
+                <div class="text-xs text-gray-500 font-mono mb-2">model 10981_88309383</div>
+
+                <!-- Yeni Loqistika Nömrəsi Sahəsi -->
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="w-20 font-semibold text-sm">Loqistika №:</span>
+                    <input type="text" placeholder="....." class="border-b border-gray-400 w-40 text-sm focus:outline-none">
+                </div>
+
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="w-20 font-semibold text-sm">Tarix:</span>
+                    <input type="date" id="dateInput" class="border-b border-gray-400 w-40 text-sm focus:outline-none">
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-20 font-semibold text-sm">Müştəri:</span>
+                    <input type="text" placeholder="Ad və Soyad daxil edin" class="border-b border-gray-400 w-full text-sm font-bold focus:outline-none uppercase">
+                </div>
+            </div>
+
+            <div class="w-1/2 flex flex-col items-end text-right">
+                <!-- LOGO YERİ: logo.png faylını eyni qovluğa qoysanız burada görünəcək. İndi placeholder var. -->
+                <img src="logo.png" onerror="this.src='https://placehold.co/150x60?text=LOGO+YERI'" alt="Logo" class="h-14 object-contain mb-1">
+                <h1 class="text-xl font-bold text-gray-900 uppercase">OBir Natürel</h1>
+                <p class="text-xs text-gray-500 mt-1">Bakı şəhəri, Abasqulu Ağa Bakıxanov 92</p>
+                <p class="text-xs text-gray-500">+994 50 700 09 56</p>
+            </div>
+        </div>
+
+        <!-- Cədvəl Hissəsi (Flex grow ilə tənzimlənir) -->
+        <div class="mb-2 flex-grow">
+            <table class="w-full border-collapse border border-gray-800">
+                <thead>
+                    <tr class="bg-gray-100 text-xs uppercase text-gray-700 text-center">
+                        <th class="border border-gray-600 p-1 w-10">№</th>
+                        <th class="border border-gray-600 p-1 text-left">Məzmun (Malın/Xidmətin adı)</th>
+                        <th class="border border-gray-600 p-1 w-20">Ölçü Vahidi</th>
+                        <th class="border border-gray-600 p-1 w-16">Miqdar</th>
+                        <th class="border border-gray-600 p-1 w-20">Qiymət (AZN)</th>
+                        <th class="border border-gray-600 p-1 w-24">Məbləğ (AZN)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Javascript ilə sətirlər doldurulacaq -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Alt hissə (Cəm və İmzalar) - Sıxlaşdırılmış -->
+        <div class="page-break-inside-avoid mt-auto">
+            <!-- Yekun Hesablamalar -->
+            <div class="flex justify-end mb-4">
+                <div class="w-64">
+                    <div class="flex justify-between items-center border-b border-gray-300 py-1">
+                        <span class="font-bold text-sm text-gray-600">Cəmi:</span>
+                        <input type="text" id="subTotal" class="text-right font-mono font-bold w-24 bg-transparent text-sm" value="0.00" readonly>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-gray-300 py-1">
+                        <!-- Faiz silindi, sadəcə ƏDV qaldı -->
+                        <span class="font-bold text-sm text-gray-600">ƏDV:</span>
+                        <input type="text" id="vatTotal" class="text-right font-mono font-bold w-24 bg-transparent text-sm" value="0.00" readonly>
+                    </div>
+                    <div class="flex justify-between items-center bg-gray-200 p-1 mt-1 rounded">
+                        <span class="font-bold text-sm text-black">YEKUN QİYMƏT:</span>
+                        <input type="text" id="grandTotal" class="text-right font-bold text-base w-28 bg-transparent" value="0.00" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Məbləğ yazı ilə -->
+            <div class="mb-4 border border-gray-400 p-2 rounded">
+                <span class="text-xs font-bold text-gray-500 block">YEKUN MƏBLƏĞ (YAZI İLƏ):</span>
+                <input type="text" id="amountInWords" placeholder="Məsələn: Səkkiz manat 00 qəpik" class="w-full font-serif italic text-base border-b border-dashed border-gray-300 focus:outline-none">
+            </div>
+
+            <!-- İmzalar -->
+            <div class="flex justify-between items-end">
+                <!-- Sol tərəf: Müştəri -->
+                <div class="w-5/12 text-center">
+                    <div class="mb-4">
+                        <input type="text" placeholder="Ad Soyad" class="w-full text-center border-b border-gray-300 mb-1 focus:outline-none font-bold text-sm">
+                        <div class="h-12 border-b border-gray-800 mb-1"></div> <!-- İmza yeri -->
+                    </div>
+                    <p class="font-bold text-xs uppercase">Təhvil Aldı (Müştəri)</p>
+                    <p class="text-[10px] text-gray-500">(İmza və Möhür)</p>
+                </div>
+
+                <!-- Sağ tərəf: Satıcı -->
+                <div class="w-5/12 text-center relative">
+                    <div class="mb-4 relative">
+                        <p class="font-bold mb-2 text-sm">Ruhid Cavadov</p>
+                        
+                        <!-- İMZA ŞƏKLİ -->
+                        <div class="h-24 flex items-end justify-center relative border-b border-gray-800">
+                             <img src="imza.png" onerror="this.style.display='none'" class="absolute bottom-1 w-40 h-auto object-contain z-10 opacity-90 rotate-[-5deg]" alt="Satıcı İmzası">
+                        </div>
+                    </div>
+                    <p class="font-bold text-xs uppercase">Təhvil Verdi (Satıcı)</p>
+                    <p class="text-[10px] text-gray-500">(İmza və Möhür)</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Səhifə yüklənəndə
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTable();
+            loadInvoiceID();
+            setDateToday();
+        });
+
+        // Çapdan əvvəl və sonra boş sətirləri idarə etmək
+        window.onbeforeprint = function() {
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach(row => {
+                const name = row.querySelector('textarea').value.trim();
+                const price = row.querySelector('.price').value;
+                const quantity = row.querySelector('.quantity').value;
+                
+                // Əgər məzmun, qiymət və ya miqdar yoxdursa gizlət
+                if (!name && (!price || price == 0) && (!quantity || quantity == 0)) {
+                    row.classList.add('hidden-print');
+                }
+            });
+        };
+
+        window.onafterprint = function() {
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach(row => {
+                row.classList.remove('hidden-print');
+            });
+        };
+
+        // Avtomatik genişlənən textarea funksiyası
+        window.autoResize = function(textarea) {
+            textarea.style.height = 'auto'; // Hündürlüyü sıfırla ki, kiçilə də bilsin
+            textarea.style.height = textarea.scrollHeight + 'px'; // Məzmun qədər böyüt
+        }
+
+        // 7 İri sətirin yaradılması
+        function initializeTable() {
+            const tbody = document.getElementById('tableBody');
+            let rowsHtml = '';
+            
+            for (let i = 1; i <= 7; i++) {
+                rowsHtml += `
+                <tr class="hover:bg-gray-50 align-top">
+                    <td class="border border-gray-400 text-center text-sm p-1">${i}</td>
+                    <td class="border border-gray-400">
+                        <!-- Input əvəzinə Textarea istifadə olunur -->
+                        <textarea class="table-input text-left px-2 text-sm" placeholder="Malın adı..." rows="1" oninput="autoResize(this)"></textarea>
+                    </td>
+                    <td class="border border-gray-400">
+                        <input type="text" class="table-input text-sm" placeholder="ədəd/kq">
+                    </td>
+                    <td class="border border-gray-400">
+                        <input type="number" step="0.01" class="table-input quantity text-sm" oninput="calculateRow(this)">
+                    </td>
+                    <td class="border border-gray-400">
+                        <input type="number" step="0.01" class="table-input price text-sm" oninput="calculateRow(this)">
+                    </td>
+                    <td class="border border-gray-400 bg-gray-50">
+                        <input type="text" class="table-input amount font-bold text-gray-700 text-sm" readonly value="0.00">
+                    </td>
+                </tr>
+                `;
+            }
+            tbody.innerHTML = rowsHtml;
+        }
+
+        // Sətir üzrə hesablama
+        function calculateRow(element) {
+            const row = element.closest('tr');
+            const qty = parseFloat(row.querySelector('.quantity').value) || 0;
+            const price = parseFloat(row.querySelector('.price').value) || 0;
+            const amountField = row.querySelector('.amount');
+            
+            const total = qty * price;
+            amountField.value = total.toFixed(2);
+            
+            calculateGrandTotal();
+        }
+
+        // Ümumi Cəm hesablama
+        function calculateGrandTotal() {
+            const amounts = document.querySelectorAll('.amount');
+            let subTotal = 0;
+            
+            amounts.forEach(input => {
+                subTotal += parseFloat(input.value) || 0;
+            });
+
+            // ƏDV 0 olaraq ayarlandı
+            const vat = 0; 
+            const grandTotal = subTotal + vat;
+
+            document.getElementById('subTotal').value = subTotal.toFixed(2);
+            document.getElementById('vatTotal').value = vat.toFixed(2);
+            document.getElementById('grandTotal').value = grandTotal.toFixed(2);
+        }
+
+        // ID Məntiqi (LocalStorage)
+        function loadInvoiceID() {
+            let currentId = localStorage.getItem('invoiceId_obir');
+            if (!currentId) {
+                currentId = 1000; // Başlanğıc ID
+            }
+            document.getElementById('invoiceId').value = '#' + currentId;
+        }
+
+        function resetInvoice() {
+            if(confirm('Yeni qaimə yaratmaq istədiyinizə əminsiniz? ID artırılacaq.')) {
+                let currentId = parseInt(localStorage.getItem('invoiceId_obir')) || 1000;
+                localStorage.setItem('invoiceId_obir', currentId + 1);
+                
+                // Inputları təmizlə
+                const inputs = document.querySelectorAll('input:not(#invoiceId), textarea');
+                inputs.forEach(input => {
+                    if(input.type !== 'date') input.value = '';
+                    if(input.classList.contains('amount') || input.id.includes('Total')) input.value = '0.00';
+                    if(input.tagName === 'TEXTAREA') input.style.height = 'auto';
+                });
+                
+                loadInvoiceID();
+                setDateToday();
+            }
+        }
+
+        // Tarixi bu günə ayarlamaq
+        function setDateToday() {
+            const dateInput = document.getElementById('dateInput');
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            dateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+    </script>
+</body>
+</html>
